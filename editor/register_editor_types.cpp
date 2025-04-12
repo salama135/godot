@@ -129,6 +129,7 @@
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
+#include "editor/plugins/simplified_texture_editor_plugin.h"
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
@@ -251,6 +252,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
 	EditorPlugins::add_by_type<ToolButtonEditorPlugin>();
 	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
+	EditorPlugins::add_by_type<SimplifiedTextureEditorPlugin>();
 
 	// 2D
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
