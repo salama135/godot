@@ -9,7 +9,9 @@ class SimplifiedEditorResourcePicker : public EditorResourcePicker {
     // Define our own enum values for menu options
     enum {
         MENU_QUICK_LOAD = 100,
-        MENU_LOAD = 101
+        MENU_LOAD = 101,
+        MENU_INSPECT = 102,
+        MENU_CLEAR = 103
     };
 
 public:
@@ -25,11 +27,13 @@ public:
 
         // menu_node->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), MENU_LOAD);
 
-        // Add a hidden dummy item to prevent the "inheritors_array.is_empty()" error
+        // Add a dummy item to prevent the "inheritors_array.is_empty()" error
         // menu_node->add_separator();
         // menu_node->add_item("Dummy", 999);
-        // menu_node->set_item_hidden(-1, true);
     }
+
+    // We don't need to override the button pressed method anymore
+    // The default implementation will show the menu with our custom options
 
     virtual bool handle_menu_selected(int p_which) override {
         // Handle our custom menu options
@@ -39,10 +43,25 @@ public:
             return EditorResourcePicker::handle_menu_selected(67); // OBJ_MENU_QUICKLOAD
         } else if (p_which == MENU_LOAD) {
             return EditorResourcePicker::handle_menu_selected(66); // OBJ_MENU_LOAD
+        } else if (p_which == MENU_INSPECT) {
+            if (get_edited_resource().is_valid()) {
+                emit_signal(SNAME("resource_selected"), get_edited_resource(), true);
+                return true;
+            }
+            return false;
+        } else if (p_which == MENU_CLEAR) {
+            if (get_edited_resource().is_valid()) {
+                set_edited_resource(Ref<Resource>());
+                emit_signal(SNAME("resource_changed"), Ref<Resource>());
+                return true;
+            }
+            return false;
         }
 
         return EditorResourcePicker::handle_menu_selected(p_which);
     }
+
+
 };
 
 class SimplifiedEditorPropertyTexture : public EditorPropertyResource {
