@@ -4,6 +4,7 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_resource_picker.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/2d/node_2d.h"
 
 class EditorInspectorPluginSimplifiedTexture : public EditorInspectorPlugin {
     GDCLASS(EditorInspectorPluginSimplifiedTexture, EditorInspectorPlugin);

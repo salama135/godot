@@ -121,11 +121,14 @@ public:
 };
 
 bool EditorInspectorPluginSimplifiedTexture::can_handle(Object *p_object) {
-    return Object::cast_to<Sprite2D>(p_object) != nullptr;
+    // Handle any node type that ends with "2D"
+    String class_name = p_object->get_class();
+    return class_name.ends_with("2D");
 }
 
 bool EditorInspectorPluginSimplifiedTexture::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-    if (p_type == Variant::OBJECT && p_path == "texture" && p_hint == PROPERTY_HINT_RESOURCE_TYPE && p_hint_text.begins_with("Texture2D")) {
+    // Handle all resource properties for 2D nodes
+    if (p_type == Variant::OBJECT && p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
         SimplifiedEditorPropertyTexture *editor = memnew(SimplifiedEditorPropertyTexture);
         editor->setup(p_object, p_path, p_hint_text);
         add_property_editor(p_path, editor);
