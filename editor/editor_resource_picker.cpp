@@ -203,6 +203,43 @@ void EditorResourcePicker::_update_menu_items() {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
+	// Check if this is a 2D resource type
+	bool is_2d_resource = false;
+	if (edited_resource.is_valid()) {
+		String res_type = _get_resource_type(edited_resource);
+		is_2d_resource = res_type.find("2D") != -1 ||
+					  ClassDB::is_parent_class(res_type, "Texture2D") ||
+					  ClassDB::is_parent_class(res_type, "SpriteFrames") ||
+					  ClassDB::is_parent_class(res_type, "TileSet") ||
+					  ClassDB::is_parent_class(res_type, "Shape2D");
+	} else if (!base_type.is_empty()) {
+		// Check if we're creating a 2D resource
+		for (int i = 0; i < base_type.get_slice_count(","); i++) {
+			String base = base_type.get_slicec(',', i);
+			if (base.find("2D") != -1 ||
+				base == "Texture2D" ||
+				base == "SpriteFrames" ||
+				base == "TileSet" ||
+				base == "Shape2D") {
+				is_2d_resource = true;
+				break;
+			}
+		}
+	}
+
+	// For 2D resources, only show Load and Quick Load options
+	if (is_2d_resource) {
+		if (is_editable()) {
+			// Add an option to load a resource from a file using the QuickOpen dialog.
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+			edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
+
+			// Add an option to load a resource from a file using the regular file dialog.
+			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
+		}
+		return;
+	}
+
 	// Add options for creating specific subtypes of the base resource type.
 	if (is_editable()) {
 		set_create_options(edit_menu);
