@@ -109,21 +109,106 @@ func _apply_color_to_element(element_name, color):
         _apply_color_to_control(element, color)
 
 func _apply_color_to_control(control, color):
-    # Try different stylebox names
-    var stylebox_names = ["panel", "normal", "tab_bg", "tabcontent", "panel_fg", "content", "content_panel", "background"]
+    # First try using styleboxes (preferred method)
+    if _try_apply_stylebox_color(control, color):
+        return true
+
+    # If styleboxes didn't work, try direct background color
+    if _try_apply_direct_color(control, color):
+        return true
+
+    # If direct color didn't work, try custom drawing
+    if _try_apply_custom_drawing(control, color):
+        return true
+
+    # If all methods failed, report failure
+    print("Could not apply color to " + control.name + " - no suitable method found")
+    return false
+
+# Try to apply color using styleboxes
+func _try_apply_stylebox_color(control, color):
+    # Try different stylebox names that might be used for the background
+    var stylebox_names = ["panel", "normal", "tab_bg", "tabcontent", "panel_fg", "content", "content_panel", "background",
+                         "read_only", "focus", "hover", "pressed", "disabled", "selected", "empty", "flat"]
 
     for stylebox_name in stylebox_names:
         if control.has_theme_stylebox(stylebox_name):
             var panel_stylebox = control.get_theme_stylebox(stylebox_name)
             if panel_stylebox is StyleBoxFlat:
+                # Apply new color
                 var new_stylebox = panel_stylebox.duplicate()
                 new_stylebox.bg_color = color
                 control.add_theme_stylebox_override(stylebox_name, new_stylebox)
+
                 print("Applied color to " + control.name + " using stylebox '" + stylebox_name + "'")
                 return true
 
-    print("Could not find suitable stylebox for " + control.name)
     return false
+
+# Try to apply color directly to the control's background
+func _try_apply_direct_color(control, color):
+    # Check if the control has self_modulate property
+    if control is CanvasItem and control.has_method("set_self_modulate"):
+        # Check if we can safely access self_modulate
+        var has_self_modulate = false
+        for property in control.get_property_list():
+            if property.name == "self_modulate":
+                has_self_modulate = true
+                break
+
+        if has_self_modulate:
+            # Apply new color with some transparency to preserve content
+            var modulated_color = Color(color.r, color.g, color.b, 0.7)
+            control.set_self_modulate(modulated_color)
+
+            print("Applied color to " + control.name + " using self_modulate")
+            return true
+
+    # For Label, RichTextLabel, etc. that have a modulate property
+    if control is CanvasItem and control.has_method("set_modulate"):
+        # Check if we can safely access modulate
+        var has_modulate = false
+        for property in control.get_property_list():
+            if property.name == "modulate":
+                has_modulate = true
+                break
+
+        if has_modulate:
+            # Apply new color with some transparency to preserve content
+            var modulated_color = Color(color.r, color.g, color.b, 0.7)
+            control.set_modulate(modulated_color)
+
+            print("Applied color to " + control.name + " using modulate")
+            return true
+
+    return false
+
+# Try to apply color using custom drawing
+func _try_apply_custom_drawing(control, color):
+    # For controls that support custom drawing
+    if control is Control:
+        # Connect our custom draw method
+        if not control.is_connected("draw", Callable(self, "_custom_draw")):
+            # Disconnect any existing draw handlers to avoid conflicts
+            var connections = control.get_signal_connection_list("draw")
+            for connection in connections:
+                control.disconnect("draw", connection.callable)
+
+            # Connect our custom draw method
+            control.connect("draw", Callable(self, "_custom_draw").bind(control, color))
+            control.queue_redraw()
+
+            print("Applied color to " + control.name + " using custom drawing")
+            return true
+
+    return false
+
+# Custom draw method for controls
+func _custom_draw(control, color):
+    # Draw a colored rectangle behind the control's content
+    var rect = Rect2(Vector2.ZERO, control.get_size())
+    var draw_color = Color(color.r, color.g, color.b, 0.3) # Use low opacity to preserve content
+    control.draw_rect(rect, draw_color)
 
 func _find_nodes_by_name(node, name):
     var result = []

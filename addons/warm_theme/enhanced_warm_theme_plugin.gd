@@ -178,13 +178,13 @@ func _enter_tree():
     await get_tree().process_frame
 
     if DEBUG:
-        print("[Warm Theme] Plugin enabled, searching for UI elements...")
+        print("[Color Theme] Plugin enabled, searching for UI elements...")
 
     # Find all UI elements
     find_ui_elements()
 
-    # Apply warm theme
-    apply_warm_theme()
+    # Apply color theme
+    apply_color_theme()
 
 func _exit_tree():
     # Restore original theme
@@ -197,7 +197,7 @@ func find_ui_elements():
     var all_nodes = _find_all_nodes(base)
 
     if DEBUG:
-        print("[Warm Theme] Found " + str(all_nodes.size()) + " nodes in the editor")
+        print("[Color Theme] Found " + str(all_nodes.size()) + " nodes in the editor")
 
     # Filter nodes by name
     for node in all_nodes:
@@ -210,14 +210,14 @@ func find_ui_elements():
             ui_elements[node_name].append(node)
 
             if DEBUG:
-                print("[Warm Theme] Found UI element: " + node_name)
+                print("[Color Theme] Found UI element: " + node_name)
 
     if DEBUG:
-        print("[Warm Theme] Found " + str(ui_elements.size()) + " unique UI elements")
+        print("[Color Theme] Found " + str(ui_elements.size()) + " unique UI elements")
 
-func apply_warm_theme():
+func apply_color_theme():
     if DEBUG:
-        print("[Warm Theme] Applying warm theme...")
+        print("[Color Theme] Applying color theme...")
 
     # Apply colors to each UI element
     for element_name in ui_elements:
@@ -228,41 +228,135 @@ func apply_warm_theme():
             _apply_color_to_control(node, color, element_name)
 
     if DEBUG:
-        print("[Warm Theme] Theme applied successfully")
+        print("[Color Theme] Theme applied successfully")
 
 func restore_original_theme():
     if DEBUG:
-        print("[Warm Theme] Restoring original theme...")
+        print("[Color Theme] Restoring original theme...")
 
     # Restore original colors
     for control in original_colors:
         if is_instance_valid(control):
-            var stylebox_name = original_colors[control]["stylebox_name"]
-            var original_color = original_colors[control]["color"]
+            var type = original_colors[control]["type"]
 
-            if control.has_theme_stylebox(stylebox_name):
-                var panel_stylebox = control.get_theme_stylebox(stylebox_name)
-                if panel_stylebox is StyleBoxFlat:
-                    var new_stylebox = panel_stylebox.duplicate()
-                    new_stylebox.bg_color = original_color
-                    control.add_theme_stylebox_override(stylebox_name, new_stylebox)
-
+            match type:
+                "stylebox":
+                    _restore_stylebox(control)
+                "self_modulate":
+                    _restore_self_modulate(control)
+                "modulate":
+                    _restore_modulate(control)
+                "custom_draw":
+                    _restore_custom_draw(control)
+                _:
                     if DEBUG:
-                        print("[Warm Theme] Restored original color for " + control.name)
-            else:
-                if DEBUG:
-                    print("[Warm Theme] Could not restore original color for " + control.name)
+                        print("[Color Theme] Unknown restoration type for " + control.name)
         else:
             if DEBUG:
-                print("[Warm Theme] Control is no longer valid, skipping restoration")
+                print("[Color Theme] Control is no longer valid, skipping restoration")
 
     if DEBUG:
-        print("[Warm Theme] Original theme restored")
+        print("[Color Theme] Original theme restored")
+
+# Restore original stylebox
+func _restore_stylebox(control):
+    var stylebox_name = original_colors[control]["stylebox_name"]
+    var original_color = original_colors[control]["color"]
+
+    if control.has_theme_stylebox(stylebox_name):
+        var panel_stylebox = control.get_theme_stylebox(stylebox_name)
+        if panel_stylebox is StyleBoxFlat:
+            var new_stylebox = panel_stylebox.duplicate()
+            new_stylebox.bg_color = original_color
+            control.add_theme_stylebox_override(stylebox_name, new_stylebox)
+
+            if DEBUG:
+                print("[Color Theme] Restored original stylebox for " + control.name)
+    else:
+        if DEBUG:
+            print("[Color Theme] Could not restore original stylebox for " + control.name)
+
+# Restore original self_modulate
+func _restore_self_modulate(control):
+    var original_color = original_colors[control]["color"]
+
+    if control is CanvasItem and control.has_method("set_self_modulate"):
+        # Check if we can safely access self_modulate
+        var has_self_modulate = false
+        for property in control.get_property_list():
+            if property.name == "self_modulate":
+                has_self_modulate = true
+                break
+
+        if has_self_modulate:
+            control.set_self_modulate(original_color)
+
+            if DEBUG:
+                print("[Color Theme] Restored original self_modulate for " + control.name)
+            return
+
+    if DEBUG:
+        print("[Color Theme] Could not restore original self_modulate for " + control.name)
+
+# Restore original modulate
+func _restore_modulate(control):
+    var original_color = original_colors[control]["color"]
+
+    if control is CanvasItem and control.has_method("set_modulate"):
+        # Check if we can safely access modulate
+        var has_modulate = false
+        for property in control.get_property_list():
+            if property.name == "modulate":
+                has_modulate = true
+                break
+
+        if has_modulate:
+            control.set_modulate(original_color)
+
+            if DEBUG:
+                print("[Color Theme] Restored original modulate for " + control.name)
+            return
+
+    if DEBUG:
+        print("[Color Theme] Could not restore original modulate for " + control.name)
+
+# Restore original draw behavior
+func _restore_custom_draw(control):
+    # Disconnect our custom draw method
+    if control.is_connected("draw", Callable(self, "_custom_draw")):
+        control.disconnect("draw", Callable(self, "_custom_draw"))
+        control.queue_redraw()
+
+        if DEBUG:
+            print("[Color Theme] Removed custom drawing for " + control.name)
+    else:
+        if DEBUG:
+            print("[Color Theme] Could not remove custom drawing for " + control.name)
 
 # Helper function to apply color to a control
 func _apply_color_to_control(control, color, element_name):
+    # First try using styleboxes (preferred method)
+    if _try_apply_stylebox_color(control, color, element_name):
+        return true
+
+    # If styleboxes didn't work, try direct background color
+    if _try_apply_direct_color(control, color, element_name):
+        return true
+
+    # If direct color didn't work, try custom drawing
+    if _try_apply_custom_drawing(control, color, element_name):
+        return true
+
+    # If all methods failed, report failure
+    if DEBUG:
+        print("[Color Theme] Could not apply color to " + element_name + " (" + control.name + ") - no suitable method found")
+    return false
+
+# Try to apply color using styleboxes
+func _try_apply_stylebox_color(control, color, element_name):
     # Try different stylebox names that might be used for the background
-    var stylebox_names = ["panel", "normal", "tab_bg", "tabcontent", "panel_fg", "content", "content_panel", "background"]
+    var stylebox_names = ["panel", "normal", "tab_bg", "tabcontent", "panel_fg", "content", "content_panel", "background",
+                         "read_only", "focus", "hover", "pressed", "disabled", "selected", "empty", "flat"]
 
     for stylebox_name in stylebox_names:
         if control.has_theme_stylebox(stylebox_name):
@@ -271,6 +365,7 @@ func _apply_color_to_control(control, color, element_name):
                 # Store original color
                 if not original_colors.has(control):
                     original_colors[control] = {
+                        "type": "stylebox",
                         "stylebox_name": stylebox_name,
                         "color": panel_stylebox.bg_color
                     }
@@ -281,12 +376,108 @@ func _apply_color_to_control(control, color, element_name):
                 control.add_theme_stylebox_override(stylebox_name, new_stylebox)
 
                 if DEBUG:
-                    print("[Warm Theme] Applied color to " + element_name + " (" + control.name + ") using stylebox '" + stylebox_name + "'")
+                    print("[Color Theme] Applied color to " + element_name + " (" + control.name + ") using stylebox '" + stylebox_name + "'")
                 return true
 
-    if DEBUG:
-        print("[Warm Theme] Could not find suitable stylebox for " + element_name + " (" + control.name + ")")
     return false
+
+# Try to apply color directly to the control's background
+func _try_apply_direct_color(control, color, element_name):
+    # Check if the control has self_modulate property
+    if control is CanvasItem and control.has_method("set_self_modulate"):
+        # Check if we can safely access self_modulate
+        var has_self_modulate = false
+        for property in control.get_property_list():
+            if property.name == "self_modulate":
+                has_self_modulate = true
+                break
+
+        if has_self_modulate:
+            # Store original color
+            if not original_colors.has(control):
+                original_colors[control] = {
+                    "type": "self_modulate",
+                    "color": control.self_modulate
+                }
+
+            # Apply new color with some transparency to preserve content
+            var modulated_color = Color(color.r, color.g, color.b, 0.7)
+            control.set_self_modulate(modulated_color)
+
+            if DEBUG:
+                print("[Color Theme] Applied color to " + element_name + " (" + control.name + ") using self_modulate")
+            return true
+
+    # For Label, RichTextLabel, etc. that have a modulate property
+    if control is CanvasItem and control.has_method("set_modulate"):
+        # Check if we can safely access modulate
+        var has_modulate = false
+        for property in control.get_property_list():
+            if property.name == "modulate":
+                has_modulate = true
+                break
+
+        if has_modulate:
+            # Store original color
+            if not original_colors.has(control):
+                original_colors[control] = {
+                    "type": "modulate",
+                    "color": control.modulate
+                }
+
+            # Apply new color with some transparency to preserve content
+            var modulated_color = Color(color.r, color.g, color.b, 0.7)
+            control.set_modulate(modulated_color)
+
+            if DEBUG:
+                print("[Color Theme] Applied color to " + element_name + " (" + control.name + ") using modulate")
+            return true
+
+    return false
+
+# Try to apply color using custom drawing
+func _try_apply_custom_drawing(control, color, element_name):
+    # For controls that support custom drawing
+    if control is Control:
+        # Store original draw method if not already stored
+        if not original_colors.has(control):
+            # Check if the control already has a draw handler
+            var has_draw_handler = false
+            var signal_list = control.get_signal_list()
+            for signal_info in signal_list:
+                if signal_info.name == "draw":
+                    has_draw_handler = true
+                    break
+
+            original_colors[control] = {
+                "type": "custom_draw",
+                "has_draw_handler": has_draw_handler
+            }
+
+        # Connect our custom draw method
+        if not control.is_connected("draw", Callable(self, "_custom_draw")):
+            # Disconnect any existing draw handler to avoid conflicts
+            if original_colors[control]["has_draw_handler"]:
+                var connections = control.get_signal_connection_list("draw")
+                for connection in connections:
+                    control.disconnect("draw", connection.callable)
+
+            # Connect our custom draw method
+            control.connect("draw", Callable(self, "_custom_draw").bind(control, color))
+            control.queue_redraw()
+
+            if DEBUG:
+                print("[Color Theme] Applied color to " + element_name + " (" + control.name + ") using custom drawing")
+            return true
+
+    return false
+
+# Custom draw method for controls
+func _custom_draw(control, color):
+    # Draw a colored rectangle behind the control's content
+    var rect = Rect2(Vector2.ZERO, control.get_size())
+    var draw_color = Color(color.r, color.g, color.b, 0.3) # Use low opacity to preserve content
+    control.draw_rect(rect, draw_color)
 
 # Helper function to find all nodes in the editor
 func _find_all_nodes(node):
