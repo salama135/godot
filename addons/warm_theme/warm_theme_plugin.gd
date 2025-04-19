@@ -1,6 +1,8 @@
 @tool
 extends EditorPlugin
 
+names = set()
+
 # Warm color palette
 const COLORS = {
 	"scene_dock": Color("#F9E0BB"),       # Light peach
@@ -9,6 +11,7 @@ const COLORS = {
 	"node_dock": Color("#FFCAAF"),        # Light coral
 	"history_dock": Color("#FFE4C0"),     # Light amber
 	"import_dock": Color("#F8D7A8"),      # Light gold
+	"debug_dock": Color("#E8D0FF"),       # Light lavender
 
 	"bottom_panel": Color("#F5CCA0"),     # Warm sand
 	"script_editor": Color("#FFF4E3"),    # Cream
@@ -92,14 +95,58 @@ func apply_warm_theme():
 				if not original_colors.has(container):
 					original_colors[container] = panel_stylebox.bg_color
 
-				# Apply new color based on container index
+				# Apply color based on dock content or name
 				var color_key = ""
-				match i:
-					0, 1: color_key = "scene_dock"
-					2, 3: color_key = "filesystem_dock"
-					4, 5: color_key = "inspector_dock"
-					6: color_key = "node_dock"
-					7: color_key = "history_dock"
+				var dock_name = container.name.to_lower()
+
+				# Try to identify the dock by its name or content
+				if "scene" in dock_name or "node" in dock_name:
+					color_key = "scene_dock"
+				elif "file" in dock_name or "fs" in dock_name or "filesystem" in dock_name:
+					color_key = "filesystem_dock"
+				elif "inspector" in dock_name or "property" in dock_name:
+					color_key = "inspector_dock"
+				elif "history" in dock_name:
+					color_key = "history_dock"
+				elif "import" in dock_name:
+					color_key = "import_dock"
+				elif "debug" in dock_name:
+					color_key = "debug_dock"
+
+				# If we couldn't identify the dock by name, try by tab titles
+				if color_key == "":
+					for j in range(container.get_tab_count()):
+						var tab_title = container.get_tab_title(j).to_lower()
+						if "scene" in tab_title or "node" in tab_title:
+							color_key = "scene_dock"
+							break
+						if "file" in tab_title or "fs" in tab_title or "filesystem" in tab_title:
+							color_key = "filesystem_dock"
+							break
+						if "inspector" in tab_title or "property" in tab_title:
+							color_key = "inspector_dock"
+							break
+						if "history" in tab_title:
+							color_key = "history_dock"
+							break
+						if "import" in tab_title:
+							color_key = "import_dock"
+							break
+						if "debug" in tab_title:
+							color_key = "debug_dock"
+							break
+
+				# If we still couldn't identify the dock, use a fallback based on index
+				if color_key == "":
+					match i:
+						0: color_key = "scene_dock"
+						1: color_key = "filesystem_dock"
+						2: color_key = "inspector_dock"
+						3: color_key = "node_dock"
+						4: color_key = "history_dock"
+						5: color_key = "import_dock"
+						6: color_key = "debug_dock"
+						_: color_key = "scene_dock" # Default fallback
 
 				if color_key != "":
 					var new_stylebox = panel_stylebox.duplicate()
@@ -107,7 +154,15 @@ func apply_warm_theme():
 					container.add_theme_stylebox_override("panel", new_stylebox)
 
 					if DEBUG:
-						print("[Warm Theme] Applied " + color_key + " to dock container " + str(i))
+						var debug_info = "[Warm Theme] Applied " + color_key + " to dock container " + str(i) + " (" + container.name + ")"
+						# Add tab titles to debug info
+						if container.get_tab_count() > 0:
+							debug_info += " with tabs: "
+							for j in range(container.get_tab_count()):
+								debug_info += container.get_tab_title(j)
+								if j < container.get_tab_count() - 1:
+									debug_info += ", "
+						print(debug_info)
 			else:
 				if DEBUG:
 					print("[Warm Theme] Could not find suitable stylebox for dock container " + str(i))
@@ -315,6 +370,7 @@ func _find_editor_tabs():
 	return null
 
 func _find_node_by_name(node, name):
+	names.insert(name)
 	if node.name == name:
 		return node
 
