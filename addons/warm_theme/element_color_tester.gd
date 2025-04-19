@@ -143,9 +143,42 @@ func _try_apply_stylebox_color(control, color):
         if control.has_theme_stylebox(stylebox_name):
             var panel_stylebox = control.get_theme_stylebox(stylebox_name)
             if panel_stylebox is StyleBoxFlat:
-                # Apply new color
+                # Apply enhanced skeuomorphic styling
                 var new_stylebox = panel_stylebox.duplicate()
+
+                # Set base color
                 new_stylebox.bg_color = color
+
+                # Add more pronounced rounded corners for a more tactile feel
+                new_stylebox.corner_radius_top_left = 6
+                new_stylebox.corner_radius_top_right = 6
+                new_stylebox.corner_radius_bottom_left = 6
+                new_stylebox.corner_radius_bottom_right = 6
+
+                # Add thicker borders for better definition
+                new_stylebox.border_width_left = 2
+                new_stylebox.border_width_top = 2
+                new_stylebox.border_width_right = 2
+                new_stylebox.border_width_bottom = 2
+
+                # Create a gradient effect with border colors
+                var border_top_color = Color(color.r * 1.1, color.g * 1.1, color.b * 1.1, 1.0).clamp(0, 1)
+                var border_bottom_color = Color(color.r * 0.7, color.g * 0.7, color.b * 0.7, 1.0)
+
+                # Apply border colors for a beveled look
+                new_stylebox.border_color = border_bottom_color
+
+                # Add stronger shadow for more elevation
+                new_stylebox.shadow_color = Color(0, 0, 0, 0.3)
+                new_stylebox.shadow_size = 4
+                new_stylebox.shadow_offset = Vector2(2, 2)
+
+                # Add content margin for a more padded, tactile feel
+                new_stylebox.content_margin_left = 8
+                new_stylebox.content_margin_top = 8
+                new_stylebox.content_margin_right = 8
+                new_stylebox.content_margin_bottom = 8
+
                 control.add_theme_stylebox_override(stylebox_name, new_stylebox)
 
                 print("Applied color to " + control.name + " using stylebox '" + stylebox_name + "'")
@@ -211,12 +244,45 @@ func _try_apply_custom_drawing(control, color):
 
     return false
 
-# Custom draw method for controls
+# Custom draw method for controls with skeuomorphic effects
 func _custom_draw(control, color):
-    # Draw a colored rectangle behind the control's content
-    var rect = Rect2(Vector2.ZERO, control.get_size())
-    var draw_color = Color(color.r, color.g, color.b, 0.3) # Use low opacity to preserve content
+    var size = control.get_size()
+    var rect = Rect2(Vector2.ZERO, size)
+
+    # Base color with low opacity to preserve content
+    var draw_color = Color(color.r, color.g, color.b, 0.3)
+
+    # Draw main background
     control.draw_rect(rect, draw_color)
+
+    # Draw rounded corners for a more tactile feel
+    var corner_radius = 6
+    var corner_size = Vector2(corner_radius, corner_radius)
+
+    # Draw border for definition
+    var border_width = 2
+    var border_color = Color(color.r * 0.7, color.g * 0.7, color.b * 0.7, 0.5)
+
+    # Top border (lighter for bevel effect)
+    var top_border = Rect2(Vector2(0, 0), Vector2(size.x, border_width))
+    control.draw_rect(top_border, Color(color.r * 1.1, color.g * 1.1, color.b * 1.1, 0.5).clamp(0, 1))
+
+    # Left border (lighter for bevel effect)
+    var left_border = Rect2(Vector2(0, 0), Vector2(border_width, size.y))
+    control.draw_rect(left_border, Color(color.r * 1.1, color.g * 1.1, color.b * 1.1, 0.5).clamp(0, 1))
+
+    # Bottom border (darker for shadow effect)
+    var bottom_border = Rect2(Vector2(0, size.y - border_width), Vector2(size.x, border_width))
+    control.draw_rect(bottom_border, border_color)
+
+    # Right border (darker for shadow effect)
+    var right_border = Rect2(Vector2(size.x - border_width, 0), Vector2(border_width, size.y))
+    control.draw_rect(right_border, border_color)
+
+    # Draw shadow
+    var shadow_offset = Vector2(2, 2)
+    var shadow_rect = Rect2(shadow_offset, size - shadow_offset)
+    control.draw_rect(shadow_rect, Color(0, 0, 0, 0.1))
 
 func _find_nodes_by_name(node, name):
     var result = []

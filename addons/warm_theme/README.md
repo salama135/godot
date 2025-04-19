@@ -1,6 +1,6 @@
-# Enhanced Color Theme for Godot Editor
+# Enhanced Skeuomorphic Theme for Godot Editor
 
-This plugin adds a distinctive color scheme to all UI elements in the Godot editor, making the interface more visually distinct and less bland. The theme uses a carefully selected color palette based on Blue Grotto, Cinnabar, Nude, and Ebony colors.
+This plugin adds a distinctive skeuomorphic design to all UI elements in the Godot editor, making the interface more visually distinct, tactile, and three-dimensional. The theme uses a carefully selected color palette based on Blue Grotto, Cinnabar, Nude, and Ebony colors, combined with shadows, bevels, and depth effects to create a rich, non-flat interface.
 
 ## Features
 
