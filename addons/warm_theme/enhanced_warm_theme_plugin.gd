@@ -263,6 +263,18 @@ func _restore_stylebox(control):
     var stylebox_name = original_colors[control]["stylebox_name"]
     var original_color = original_colors[control]["color"]
 
+    # Check if the control supports theme styleboxes
+    if not control is Control:
+        if DEBUG:
+            print("[Color Theme] Could not restore original stylebox for " + control.name + " (not a Control)")
+        return
+
+    # Check if the control has this stylebox method
+    if not control.has_method("has_theme_stylebox"):
+        if DEBUG:
+            print("[Color Theme] Could not restore original stylebox for " + control.name + " (no has_theme_stylebox method)")
+        return
+
     if control.has_theme_stylebox(stylebox_name):
         var panel_stylebox = control.get_theme_stylebox(stylebox_name)
         if panel_stylebox is StyleBoxFlat:
@@ -354,11 +366,19 @@ func _apply_color_to_control(control, color, element_name):
 
 # Try to apply color using styleboxes
 func _try_apply_stylebox_color(control, color, element_name):
+    # Check if the control supports theme styleboxes
+    if not control is Control:
+        return false
+
     # Try different stylebox names that might be used for the background
     var stylebox_names = ["panel", "normal", "tab_bg", "tabcontent", "panel_fg", "content", "content_panel", "background",
                          "read_only", "focus", "hover", "pressed", "disabled", "selected", "empty", "flat"]
 
     for stylebox_name in stylebox_names:
+        # Check if the control has this stylebox method
+        if not control.has_method("has_theme_stylebox"):
+            continue
+
         if control.has_theme_stylebox(stylebox_name):
             var panel_stylebox = control.get_theme_stylebox(stylebox_name)
             if panel_stylebox is StyleBoxFlat:
