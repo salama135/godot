@@ -4,12 +4,13 @@ This plugin adds a distinctive skeuomorphic design to all UI elements in the God
 
 ## Features
 
-- Applies a distinctive color palette to all UI elements in the Godot editor
+- Applies skeuomorphic styling to ALL UI elements in the Godot editor
 - Uses a modern color scheme based on Blue Grotto, Cinnabar, Nude, and Ebony
-- Each element gets its own distinct color based on its type and function
-- Colors are carefully chosen to create visual hierarchy and improve usability
+- Adds depth with shadows, bevels, rounded corners, and borders
+- Creates a tactile, three-dimensional interface that's visually engaging
+- Intelligently assigns colors based on control type and function
 - Automatically restores the original theme when disabled
-- Includes tools for debugging and testing different color combinations
+- Includes tools for debugging and testing different styling combinations
 
 ## Color Palette
 

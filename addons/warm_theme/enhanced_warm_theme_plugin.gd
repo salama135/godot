@@ -199,36 +199,81 @@ func find_ui_elements():
     if DEBUG:
         print("[Color Theme] Found " + str(all_nodes.size()) + " nodes in the editor")
 
-    # Filter nodes by name
+    # Apply to all Control nodes instead of filtering by name
+    var control_count = 0
+
     for node in all_nodes:
         var node_name = node.name
 
-        # Check if this node's name is in our element_colors dictionary
-        if element_colors.has(node_name):
+        # Skip nodes that are likely to cause issues if styled
+        var skip_nodes = ["WindowDialog", "PopupMenu", "PopupPanel", "ToolButton", "MenuButton"]
+        var should_skip = false
+
+        for skip_name in skip_nodes:
+            if node.get_class() == skip_name:
+                should_skip = true
+                break
+
+        if should_skip:
+            continue
+
+        # Add all Control nodes to be styled
+        if node is Control:
+            # Determine which color to use based on the node's class or parent
+            var color_key = "nude"  # Default color
+
+            # Try to assign a meaningful color based on the node's class or purpose
+            if "Tree" in node.get_class() or "ItemList" in node.get_class():
+                color_key = "blue"
+            elif "Button" in node.get_class() or "CheckBox" in node.get_class():
+                color_key = "red"
+            elif "Panel" in node.get_class() or "Container" in node.get_class():
+                color_key = "nude"
+            elif "Edit" in node.get_class() or "LineEdit" in node.get_class():
+                color_key = "light_nude"
+            elif "Label" in node.get_class() or "RichText" in node.get_class():
+                color_key = "light_blue"
+            elif "Tab" in node.get_class() or "Dock" in node.name:
+                color_key = "blue_nude"
+
+            # Store the node with its determined color
             if not ui_elements.has(node_name):
                 ui_elements[node_name] = []
-            ui_elements[node_name].append(node)
 
-            if DEBUG:
-                print("[Color Theme] Found UI element: " + node_name)
+            # Store the node and its color
+            ui_elements[node_name] = [node]
+            element_colors[node_name] = COLOR_PALETTE[color_key]
+
+            control_count += 1
+
+            if DEBUG and control_count % 100 == 0:
+                print("[Color Theme] Processed " + str(control_count) + " controls...")
 
     if DEBUG:
-        print("[Color Theme] Found " + str(ui_elements.size()) + " unique UI elements")
+        print("[Color Theme] Found and prepared " + str(control_count) + " controls for styling")
 
 func apply_color_theme():
     if DEBUG:
-        print("[Color Theme] Applying color theme...")
+        print("[Color Theme] Applying skeuomorphic color theme to all controls...")
 
     # Apply colors to each UI element
+    var success_count = 0
+    var failure_count = 0
+
     for element_name in ui_elements:
         var color = element_colors[element_name]
         var nodes = ui_elements[element_name]
 
         for node in nodes:
-            _apply_color_to_control(node, color, element_name)
+            if _apply_color_to_control(node, color, element_name):
+                success_count += 1
+            else:
+                failure_count += 1
 
     if DEBUG:
-        print("[Color Theme] Theme applied successfully")
+        print("[Color Theme] Theme applied successfully to " + str(success_count) + " controls")
+        if failure_count > 0:
+            print("[Color Theme] Failed to apply theme to " + str(failure_count) + " controls")
 
 func restore_original_theme():
     if DEBUG:
