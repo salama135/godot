@@ -1,61 +1,55 @@
-# Enhanced Warm Theme for Godot Editor
+# Enhanced Color Theme for Godot Editor
 
-This plugin adds warm color variations to all UI elements in the Godot editor, making the interface more visually distinct and less bland.
+This plugin adds a distinctive color scheme to all UI elements in the Godot editor, making the interface more visually distinct and less bland. The theme uses a carefully selected color palette based on Blue Grotto, Cinnabar, Nude, and Ebony colors.
 
 ## Features
 
-- Applies a warm color palette to all UI elements in the Godot editor
+- Applies a distinctive color palette to all UI elements in the Godot editor
+- Uses a modern color scheme based on Blue Grotto, Cinnabar, Nude, and Ebony
 - Each element gets its own distinct color based on its type and function
-- Colors are carefully chosen to be easy on the eyes and create a cohesive look
+- Colors are carefully chosen to create visual hierarchy and improve usability
 - Automatically restores the original theme when disabled
-- Includes tools for debugging and testing different color palettes
+- Includes tools for debugging and testing different color combinations
 
 ## Color Palette
 
-The plugin uses an extensive warm color palette with many variations:
+The plugin uses a distinctive color palette based on four main colors:
 
 ### Base Colors
 
-- Peach (#F9E0BB)
-- Pink (#F9C5D5)
-- Tan (#F2D8B3)
-- Coral (#FFCAAF)
-- Amber (#FFE4C0)
-- Gold (#F8D7A8)
-- Lavender (#E8D0FF)
-- Sand (#F5CCA0)
-- Cream (#FFF4E3)
-- Off-white (#FFFAF2)
-- Ivory (#FFF8E7)
-- Pale gold (#F6D6A3)
+- Blue Grotto (#5A91BB) - A calming blue tone for primary UI elements
+- Cinnabar (#EB515E) - A vibrant red for accent and important elements
+- Nude (#D3C0B2) - A neutral beige for background and common elements
+- Ebony (#0B0909) - A near-black for dark accents and contrast
 
-### Additional Colors
+### Derived Colors
 
-- Light salmon (#FFA07A)
-- Light coral (#F08080)
-- Peach puff (#FFDAB9)
-- Bisque (#FFE4C4)
-- Moccasin (#FFE4B5)
-- Navajo white (#FFDEAD)
-- Wheat (#F5DEB3)
-- Burlywood (#DEB887)
-- Sandy brown (#F4A460)
-- Rosy brown (#BC8F8F)
-- Goldenrod (#DAA520)
-- Peru (#CD853F)
-- Chocolate (#D2691E)
+#### Lighter Tints
 
-### Lighter Tints
+- Light Blue Grotto (#8CB3D1) - A lighter version of the blue
+- Light Cinnabar (#F28A93) - A lighter version of the red
+- Light Nude (#E5D9D0) - A lighter version of the nude color
+- Light Ebony (#3D3A3A) - A lighter version of the dark color
 
-- Light peach (#FCF0DB)
-- Light pink (#FCE5ED)
-- Light tan (#F9F0E3)
-- Light coral (#FFE5DF)
-- Light amber (#FFF4E0)
-- Light gold (#FCF0D8)
-- Light lavender (#F4E8FF)
-- Light sand (#FAE8D0)
-- Light cream (#FFFAF3)
+#### Darker Shades
+
+- Dark Blue Grotto (#3A6A8F) - A darker version of the blue
+- Dark Cinnabar (#B83642) - A darker version of the red
+- Dark Nude (#A99889) - A darker version of the nude color
+- Dark Ebony (#000000) - Pure black
+
+#### Mixed Colors
+
+- Blue-Red Mix (#9D718A) - A purple tone from mixing blue and red
+- Blue-Nude Mix (#96A8B7) - A muted blue from mixing blue and nude
+- Red-Nude Mix (#DF8888) - A muted red from mixing red and nude
+
+#### Transparent Versions
+
+- Transparent Blue (#5A91BB with 70% opacity)
+- Transparent Red (#EB515E with 70% opacity)
+- Transparent Nude (#D3C0B2 with 70% opacity)
+- Transparent Ebony (#0B0909 with 70% opacity)
 
 ## Installation
 

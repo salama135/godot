@@ -1,7 +1,6 @@
 @tool
 extends EditorPlugin
 
-names = set()
 
 # Warm color palette
 const COLORS = {
@@ -370,7 +369,7 @@ func _find_editor_tabs():
 	return null
 
 func _find_node_by_name(node, name):
-	names.insert(name)
+
 	if node.name == name:
 		return node
 
